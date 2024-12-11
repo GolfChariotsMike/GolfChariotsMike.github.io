@@ -67,7 +67,6 @@ tr:nth-child(even) td {
 </head>
 <body>
     <h1 id="title">OSSIE INDOOR BEACH VOLLEYBALL</h1>
-    <h2 id="currentTime">Loading current time...</h2>
     <div id="data">Loading data...</div>
     <script>
         async function fetchXML(url) {
@@ -79,20 +78,11 @@ tr:nth-child(even) td {
             const parser = new DOMParser();
             return parser.parseFromString(text, 'application/xml');
         }
-function updateCurrentTime() {
-    const now = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-    document.getElementById('currentTime').textContent = `Current Time: ${now.toLocaleDateString(undefined, options)}`;
-}
 
-async function loadFixtures() {
+        async function loadFixtures() {
     try {
-        // Update the current time display
-        updateCurrentTime();
-
-        // Get today's date in the local timezone
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize time to midnight for comparison
 
         const urls = {
             Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4'],
@@ -114,7 +104,7 @@ async function loadFixtures() {
         // Fetch all XML data
         const allData = await Promise.all(selectedURLs.map(fetchXML));
 
-        // Filter fixtures for today's date only
+        // Filter fixtures for today only
         const fixtureData = {};
         allData.forEach(xml => {
             const fixtures = xml.getElementsByTagName('Fixture');
@@ -122,10 +112,10 @@ async function loadFixtures() {
                 const dateTimeString = fixture.getAttribute('DateTime');
                 const [datePart] = dateTimeString.split(' '); // Extract date (DD/MM/YYYY)
                 const [day, month, year] = datePart.split('/');
-                const fixtureDate = new Date(`${year}-${month}-${day}`); // Convert to local date object
+                const fixtureDate = new Date(`${year}-${month}-${day}`);
 
                 // Compare fixture date with today's date
-                if (fixtureDate.toDateString() === today.toDateString()) {
+                if (fixtureDate.getTime() === today.getTime()) {
                     const timePart = dateTimeString.split(' ')[1];
                     const court = fixture.getAttribute('PlayingAreaName');
                     const match = {
