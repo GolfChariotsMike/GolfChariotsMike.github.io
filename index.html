@@ -16,6 +16,8 @@
         }
         th {
             background-color: #f4b41a;
+            font-weight: bold; /* Bold font for all headers */
+            font-size: 1em;    /* Uniform font size for headers */
         }
         .match {
             font-size: 1.5em;
@@ -112,7 +114,7 @@
                 output += '</tr>';
 
                 Object.entries(fixtureData).forEach(([time, courts]) => {
-                    output += `<tr><td>${time}</td>`;
+                    output += `<tr><td><strong>${time}</strong></td>`;
                     allCourts.forEach(court => {
                         if (courts[court]) {
                             const match = courts[court];
