@@ -12,15 +12,26 @@
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 16px;
         }
         th {
             background-color: #f4b41a;
         }
+        .match {
+            font-size: 1.5em;
+            line-height: 1.5;
+        }
+        .match span {
+            display: block;
+        }
+        .match .vs {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <h1>Sports Fixtures</h1>
+    <h1 id="title">Sports Fixtures</h1>
     <div id="data">Loading data...</div>
     <script>
         async function fetchXML() {
@@ -61,6 +72,10 @@
                     }
                 }
 
+                // Display the date in the title
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('title').textContent += ` - ${nextDate.toLocaleDateString(undefined, options)}`;
+
                 // Organize fixtures by time and court
                 for (const fixture of fixtures) {
                     const dateTimeString = fixture.getAttribute('DateTime');
@@ -70,7 +85,10 @@
 
                     if (fixtureDate.toDateString() === nextDate.toDateString()) {
                         const court = fixture.getAttribute('PlayingAreaName');
-                        const match = `${fixture.getAttribute('HomeTeam')} vs ${fixture.getAttribute('AwayTeam')}`;
+                        const match = {
+                            homeTeam: fixture.getAttribute('HomeTeam'),
+                            awayTeam: fixture.getAttribute('AwayTeam'),
+                        };
 
                         if (!fixtureData[timePart]) {
                             fixtureData[timePart] = {};
@@ -96,7 +114,16 @@
                 Object.entries(fixtureData).forEach(([time, courts]) => {
                     output += `<tr><td>${time}</td>`;
                     allCourts.forEach(court => {
-                        output += `<td>${courts[court] || ''}</td>`;
+                        if (courts[court]) {
+                            const match = courts[court];
+                            output += `<td class="match">
+                                <span>${match.homeTeam}</span>
+                                <span class="vs">vs</span>
+                                <span>${match.awayTeam}</span>
+                            </td>`;
+                        } else {
+                            output += `<td></td>`;
+                        }
                     });
                     output += '</tr>';
                 });
