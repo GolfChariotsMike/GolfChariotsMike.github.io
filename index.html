@@ -81,8 +81,9 @@ tr:nth-child(even) td {
 
         async function loadFixtures() {
     try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize time to midnight for comparison
+        // Get today's date in the local timezone
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Normalized to midnight
 
         const urls = {
             Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4'],
@@ -104,7 +105,7 @@ tr:nth-child(even) td {
         // Fetch all XML data
         const allData = await Promise.all(selectedURLs.map(fetchXML));
 
-        // Filter fixtures for today only
+        // Filter fixtures for today's date only
         const fixtureData = {};
         allData.forEach(xml => {
             const fixtures = xml.getElementsByTagName('Fixture');
@@ -112,10 +113,10 @@ tr:nth-child(even) td {
                 const dateTimeString = fixture.getAttribute('DateTime');
                 const [datePart] = dateTimeString.split(' '); // Extract date (DD/MM/YYYY)
                 const [day, month, year] = datePart.split('/');
-                const fixtureDate = new Date(`${year}-${month}-${day}`);
+                const fixtureDate = new Date(`${year}-${month}-${day}`); // Convert to local date object
 
                 // Compare fixture date with today's date
-                if (fixtureDate.getTime() === today.getTime()) {
+                if (fixtureDate.toDateString() === today.toDateString()) {
                     const timePart = dateTimeString.split(' ')[1];
                     const court = fixture.getAttribute('PlayingAreaName');
                     const match = {
