@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Fixtures</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f4b41a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sports Fixtures</h1>
+    <div id="data">Loading data...</div>
+    <script>
+        async function fetchXML() {
+            const response = await fetch('https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4&DivisionId=41'); // Replace with your XML URL
+            const text = await response.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, 'application/xml');
+
+            const fixtures = xml.getElementsByTagName('Fixture');
+            let output = '<table><tr><th>Time</th><th>Home Team</th><th>Away Team</th><th>Court</th></tr>';
+
+            for (const fixture of fixtures) {
+                const time = fixture.getAttribute('DateTime');
+                const homeTeam = fixture.getAttribute('HomeTeam');
+                const awayTeam = fixture.getAttribute('AwayTeam');
+                const court = fixture.getAttribute('PlayingAreaName');
+                output += `<tr><td>${time}</td><td>${homeTeam}</td><td>${awayTeam}</td><td>${court}</td></tr>`;
+            }
+
+            output += '</table>';
+            document.getElementById('data').innerHTML = output;
+        }
+
+        fetchXML().catch(err => {
+            document.getElementById('data').innerHTML = 'Error loading data.';
+            console.error(err);
+        });
+    </script>
+</body>
+</html>
