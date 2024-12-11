@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sports Fixtures</title>
+    <title>Volleyball Fixtures</title>
     <style>
         table {
             width: 100%;
@@ -15,9 +15,9 @@
             padding: 16px;
         }
         th {
-            background-color: #de2829;
-            font-weight: bold; /* Bold font for all headers */
-            font-size: 1em;    /* Uniform font size for headers */
+            background-color: #f4b41a;
+            font-weight: bold;
+            font-size: 1em;
         }
         .match {
             font-size: 1.5em;
@@ -38,7 +38,30 @@
     <script>
         async function fetchXML() {
             try {
-                const response = await fetch('https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4');
+                // Get today's day of the week
+                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const today = new Date();
+                const currentDay = daysOfWeek[today.getDay()];
+
+                // Determine the correct URL based on the day of the week
+                const urls = {
+                    Monday: 'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4',
+                    Tuesday: 'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=5&SeasonId=4',
+                    Wednesday: 'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=4',
+                    Thursday: 'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=3&SeasonId=4',
+                    Friday: 'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=4',
+                    Saturday: 'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=4',
+                    Sunday: 'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=4'
+                };
+
+                const selectedURL = urls[currentDay];
+                if (!selectedURL) {
+                    document.getElementById('data').innerHTML = 'No fixtures available for today.';
+                    return;
+                }
+
+                // Fetch the XML from the selected URL
+                const response = await fetch(selectedURL);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
@@ -49,54 +72,27 @@
 
                 const fixtures = xml.getElementsByTagName('Fixture');
                 if (fixtures.length === 0) {
-                    document.getElementById('data').innerHTML = 'No fixtures found.';
+                    document.getElementById('data').innerHTML = `No fixtures found for ${currentDay}.`;
                     return;
                 }
 
-                const today = new Date(); // Current date and time
-                today.setHours(0, 0, 0, 0); // Normalize time to midnight
-
-                let nextDate = null;
-                const fixtureData = {};
-
-                // Determine today's or the next available date
-                for (const fixture of fixtures) {
-                    const dateTimeString = fixture.getAttribute('DateTime');
-                    const [datePart] = dateTimeString.split(' '); // Extract date
-                    const [day, month, year] = datePart.split('/');
-                    const fixtureDate = new Date(`${year}-${month}-${day}`);
-
-                    // Check if fixture is today or later
-                    if (fixtureDate >= today) {
-                        if (!nextDate || fixtureDate < nextDate) {
-                            nextDate = fixtureDate; // Update next available date
-                        }
-                    }
-                }
-
-                // Display the date in the title
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                document.getElementById('title').textContent += ` - ${nextDate.toLocaleDateString(undefined, options)}`;
+                document.getElementById('title').textContent += ` - ${currentDay}`;
 
                 // Organize fixtures by time and court
+                const fixtureData = {};
                 for (const fixture of fixtures) {
                     const dateTimeString = fixture.getAttribute('DateTime');
                     const [datePart, timePart] = dateTimeString.split(' ');
-                    const [day, month, year] = datePart.split('/');
-                    const fixtureDate = new Date(`${year}-${month}-${day}`);
+                    const court = fixture.getAttribute('PlayingAreaName');
+                    const match = {
+                        homeTeam: fixture.getAttribute('HomeTeam'),
+                        awayTeam: fixture.getAttribute('AwayTeam'),
+                    };
 
-                    if (fixtureDate.toDateString() === nextDate.toDateString()) {
-                        const court = fixture.getAttribute('PlayingAreaName');
-                        const match = {
-                            homeTeam: fixture.getAttribute('HomeTeam'),
-                            awayTeam: fixture.getAttribute('AwayTeam'),
-                        };
-
-                        if (!fixtureData[timePart]) {
-                            fixtureData[timePart] = {};
-                        }
-                        fixtureData[timePart][court] = match;
+                    if (!fixtureData[timePart]) {
+                        fixtureData[timePart] = {};
                     }
+                    fixtureData[timePart][court] = match;
                 }
 
                 // Get unique list of courts
