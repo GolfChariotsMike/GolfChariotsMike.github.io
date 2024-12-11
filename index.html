@@ -29,14 +29,26 @@
             const xml = parser.parseFromString(text, 'application/xml');
 
             const fixtures = xml.getElementsByTagName('Fixture');
+            const today = new Date();
             let output = '<table><tr><th>Time</th><th>Home Team</th><th>Away Team</th><th>Court</th></tr>';
 
             for (const fixture of fixtures) {
-                const time = fixture.getAttribute('DateTime');
-                const homeTeam = fixture.getAttribute('HomeTeam');
-                const awayTeam = fixture.getAttribute('AwayTeam');
-                const court = fixture.getAttribute('PlayingAreaName');
-                output += `<tr><td>${time}</td><td>${homeTeam}</td><td>${awayTeam}</td><td>${court}</td></tr>`;
+                const dateTimeString = fixture.getAttribute('DateTime');
+                const [datePart, timePart] = dateTimeString.split(' ');
+                const [day, month, year] = datePart.split('/');
+                const fixtureDate = new Date(`${year}-${month}-${day}`);
+
+                // Check if the fixture is today or the next date
+                if (fixtureDate >= today && (!nextDate || fixtureDate < nextDate)) {
+                    nextDate = fixtureDate;
+                }
+
+                if (fixtureDate.toDateString() === nextDate.toDateString()) {
+                    const homeTeam = fixture.getAttribute('HomeTeam');
+                    const awayTeam = fixture.getAttribute('AwayTeam');
+                    const court = fixture.getAttribute('PlayingAreaName');
+                    output += `<tr><td>${timePart}</td><td>${homeTeam}</td><td>${awayTeam}</td><td>${court}</td></tr>`;
+                }
             }
 
             output += '</table>';
