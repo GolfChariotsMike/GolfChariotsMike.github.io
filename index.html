@@ -8,6 +8,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            text-align: center;
         }
         th, td {
             border: 1px solid #ddd;
@@ -43,9 +44,9 @@
                 today.setHours(0, 0, 0, 0); // Normalize time to midnight
 
                 let nextDate = null;
-                const filteredFixtures = [];
+                const fixtureData = {};
 
-                // Loop through fixtures and determine today's or the next available date
+                // Determine today's or the next available date
                 for (const fixture of fixtures) {
                     const dateTimeString = fixture.getAttribute('DateTime');
                     const [datePart] = dateTimeString.split(' '); // Extract date
@@ -60,35 +61,47 @@
                     }
                 }
 
-                // Filter fixtures matching the nextDate
+                // Organize fixtures by time and court
                 for (const fixture of fixtures) {
                     const dateTimeString = fixture.getAttribute('DateTime');
-                    const [datePart] = dateTimeString.split(' '); // Extract date
+                    const [datePart, timePart] = dateTimeString.split(' ');
                     const [day, month, year] = datePart.split('/');
                     const fixtureDate = new Date(`${year}-${month}-${day}`);
 
                     if (fixtureDate.toDateString() === nextDate.toDateString()) {
-                        filteredFixtures.push({
-                            time: dateTimeString.split(' ')[1], // Extract time
-                            homeTeam: fixture.getAttribute('HomeTeam'),
-                            awayTeam: fixture.getAttribute('AwayTeam'),
-                            court: fixture.getAttribute('PlayingAreaName'),
-                        });
+                        const court = fixture.getAttribute('PlayingAreaName');
+                        const match = `${fixture.getAttribute('HomeTeam')} vs ${fixture.getAttribute('AwayTeam')}`;
+
+                        if (!fixtureData[timePart]) {
+                            fixtureData[timePart] = {};
+                        }
+                        fixtureData[timePart][court] = match;
                     }
                 }
 
-                // Build the table
-                let output = '<table><tr><th>Time</th><th>Home Team</th><th>Away Team</th><th>Court</th></tr>';
-                for (const fixture of filteredFixtures) {
-                    output += `<tr>
-                        <td>${fixture.time}</td>
-                        <td>${fixture.homeTeam}</td>
-                        <td>${fixture.awayTeam}</td>
-                        <td>${fixture.court}</td>
-                    </tr>`;
-                }
-                output += '</table>';
+                // Get unique list of courts
+                const allCourts = Array.from(
+                    new Set(
+                        Object.values(fixtureData).flatMap(times => Object.keys(times))
+                    )
+                );
 
+                // Build the table
+                let output = '<table><tr><th>Time</th>';
+                allCourts.forEach(court => {
+                    output += `<th>${court}</th>`;
+                });
+                output += '</tr>';
+
+                Object.entries(fixtureData).forEach(([time, courts]) => {
+                    output += `<tr><td>${time}</td>`;
+                    allCourts.forEach(court => {
+                        output += `<td>${courts[court] || ''}</td>`;
+                    });
+                    output += '</tr>';
+                });
+
+                output += '</table>';
                 document.getElementById('data').innerHTML = output;
             } catch (err) {
                 console.error('Error fetching or processing XML:', err);
