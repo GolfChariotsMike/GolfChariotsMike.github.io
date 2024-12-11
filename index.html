@@ -25,25 +25,30 @@
         async function fetchXML() {
     try {
         const response = await fetch('https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4'); // Replace with your XML URL
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
         const text = await response.text();
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, 'application/xml');
 
-        console.log('Parsed XML:', xml); // Log the parsed XML to ensure it’s correct
-
         const fixtures = xml.getElementsByTagName('Fixture');
-        console.log('Fixtures:', fixtures); // Log fixture elements
+        let output = '<table><tr><th>Date</th><th>Time</th><th>Home Team</th><th>Away Team</th><th>Court</th></tr>';
 
-        if (fixtures.length === 0) {
-            document.getElementById('data').innerHTML = 'No fixtures found.';
-            return;
+        for (const fixture of fixtures) {
+            const dateTimeString = fixture.getAttribute('DateTime');
+            const homeTeam = fixture.getAttribute('HomeTeam');
+            const awayTeam = fixture.getAttribute('AwayTeam');
+            const court = fixture.getAttribute('PlayingAreaName');
+
+            output += `<tr>
+                <td>${dateTimeString.split(' ')[0]}</td>
+                <td>${dateTimeString.split(' ')[1]}</td>
+                <td>${homeTeam}</td>
+                <td>${awayTeam}</td>
+                <td>${court}</td>
+            </tr>`;
         }
 
-        document.getElementById('data').innerHTML = 'XML parsed successfully!';
+        output += '</table>';
+        document.getElementById('data').innerHTML = output;
     } catch (err) {
         console.error('Error fetching or processing XML:', err);
         document.getElementById('data').innerHTML = 'Error loading data.';
