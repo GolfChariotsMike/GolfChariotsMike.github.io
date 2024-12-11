@@ -116,16 +116,21 @@ tr:nth-child(even) td {
                     for (const fixture of fixtures) {
                         const dateTimeString = fixture.getAttribute('DateTime');
                         const [datePart, timePart] = dateTimeString.split(' ');
+                        const [hour, minute] = timePart.split(':');
+                        const dateObj = new Date();
+                        dateObj.setHours(parseInt(hour), parseInt(minute));
+                        const timeFormatted = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
                         const court = fixture.getAttribute('PlayingAreaName');
                         const match = {
                             homeTeam: fixture.getAttribute('HomeTeam'),
                             awayTeam: fixture.getAttribute('AwayTeam'),
                         };
 
-                        if (!fixtureData[timePart]) {
-                            fixtureData[timePart] = {};
+                        if (!fixtureData[timeFormatted]) {
+                            fixtureData[timeFormatted] = {};
                         }
-                        fixtureData[timePart][court] = match;
+                        fixtureData[timeFormatted][court] = match;
                     }
                 });
 
