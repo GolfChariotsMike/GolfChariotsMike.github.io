@@ -5,31 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volleyball Fixtures</title>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 16px;
-        }
-        th {
-            background-color: #f4b41a;
-            font-weight: bold;
-            font-size: 1em;
-        }
-        .match {
-            font-size: 1.5em;
-            line-height: 1.5;
-        }
-        .match span {
-            display: block;
-        }
-        .match .vs {
-            font-size: 1.2em;
-            font-weight: bold;
-        }
+        body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa; /* Light gray background */
+    color: #212529; /* Dark text */
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5em;
+    color: #007bff; /* Blue */
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px auto; /* Center the table */
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+th, td {
+    border: 1px solid #dee2e6;
+    padding: 16px;
+    text-align: center;
+}
+
+th {
+    background-color: #007bff; /* Blue header */
+    color: white;
+    font-weight: bold;
+}
+
+td {
+    background-color: #ffffff;
+    font-size: 1.2em;
+}
+
+tr:nth-child(even) td {
+    background-color: #f2f2f2; /* Light gray rows */
+}
+
+.match {
+    font-family: 'Georgia', serif;
+    font-size: 1.5em;
+    line-height: 1.8;
+}
+
+.match .vs {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #ff0000; /* Red for "vs" */
+}
+
     </style>
 </head>
 <body>
