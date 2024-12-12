@@ -77,6 +77,8 @@ tr:nth-child(even) td {
             const text = await response.text();
             const parser = new DOMParser();
             return parser.parseFromString(text, 'application/xml');
+            console.log('Fixture Date:', fixtureDate);
+console.log('Today:', today);
         }
 
         async function loadFixtures() {
