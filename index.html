@@ -184,35 +184,40 @@
 
                 // Build the table
                 let output = '<table><tr><th>Time</th>';
-                const allCourts = Array.from(
-                    new Set(
-                        Object.values(fixtureData).flatMap(times => Object.keys(times))
-                    )
-                );
-                allCourts.forEach(court => {
-                    output += `<th>${court}</th>`;
-                });
-                output += '</tr>';
 
-                Object.entries(fixtureData).forEach(([time, courts]) => {
-                    output += `<tr><td><strong>${time}</strong></td>`;
-                    allCourts.forEach(court => {
-                        if (courts[court]) {
-                            const match = courts[court];
-                            output += `<td class="match">
-                                <span>${match.homeTeam}</span>
-                                <span class="vs">vs</span>
-                                <span>${match.awayTeam}</span>
-                            </td>`;
-                        } else {
-                            output += `<td></td>`;
-                        }
-                    });
-                    output += '</tr>';
-                });
+// Ensure courts are displayed in the predefined order
+const predefinedCourtOrder = ['Court 1', 'Court 2', 'Court 3', 'Court 4', 'Court 5', 'Court 6', 'Court 7', 'Court 8'];
+const allCourts = predefinedCourtOrder.filter(court => {
+    // Include courts in order even if they have no games
+    return Object.values(fixtureData).some(times => Object.keys(times).includes(court)) || true;
+});
 
-                output += '</table>';
-                document.getElementById('data').innerHTML = output;
+// Add column headers for courts
+allCourts.forEach(court => {
+    output += `<th>${court}</th>`;
+});
+output += '</tr>';
+
+// Add rows for each time slot
+Object.entries(fixtureData).forEach(([time, courts]) => {
+    output += `<tr><td><strong>${time}</strong></td>`;
+    allCourts.forEach(court => {
+        if (courts[court]) {
+            const match = courts[court];
+            output += `<td class="match">
+                <span>${match.homeTeam}</span>
+                <span class="vs">vs</span>
+                <span>${match.awayTeam}</span>
+            </td>`;
+        } else {
+            output += `<td></td>`;
+        }
+    });
+    output += '</tr>';
+});
+
+output += '</table>';
+document.getElementById('data').innerHTML = output;
             } catch (err) {
                 console.error('Error loading fixtures:', err);
                 document.getElementById('data').innerHTML = 'Error loading data.';
