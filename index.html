@@ -80,102 +80,112 @@ tr:nth-child(even) td {
         }
 
         async function loadFixtures() {
-            try {
-                // Get today's day of the week
-                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const today = new Date();
-                const currentDay = daysOfWeek[today.getDay()];
+    try {
+        // Get today's normalized date
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Midnight of today
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDay = daysOfWeek[today.getDay()];
 
-                // URLs for each day
-                const urls = {
-                    Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4'],
-                    Tuesday: [
-                        'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=4',
-                        'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=5&SeasonId=4'
-                    ],
-                    Wednesday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=4',
-                               'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=4'],
-                    Thursday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=3&SeasonId=4'],
-                    Friday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=4'],
-                    Saturday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=4'],
-                    Sunday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=4']
-                };
+        // URLs for each day
+        const urls = {
+            Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=4'],
+            Tuesday: [
+                'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=4',
+                'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=5&SeasonId=4'
+            ],
+            Wednesday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=4',
+                'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=4'],
+            Thursday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=3&SeasonId=4'],
+            Friday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=4'],
+            Saturday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=4'],
+            Sunday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=4']
+        };
 
-                const selectedURLs = urls[currentDay];
-                if (!selectedURLs || selectedURLs.length === 0) {
-                    document.getElementById('data').innerHTML = `No fixtures available for ${currentDay}.`;
-                    return;
-                }
-
-                // Fetch all XML data
-                const allData = await Promise.all(selectedURLs.map(fetchXML));
-
-                // Process and combine data
-                const fixtureData = {};
-                allData.forEach(xml => {
-                    const fixtures = xml.getElementsByTagName('Fixture');
-                    for (const fixture of fixtures) {
-                        const dateTimeString = fixture.getAttribute('DateTime');
-                        const [datePart, timePart] = dateTimeString.split(' ');
-                        const [hour, minute] = timePart.split(':');
-                        const dateObj = new Date();
-                        dateObj.setHours(parseInt(hour), parseInt(minute));
-                        const timeFormatted = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-
-                        const court = fixture.getAttribute('PlayingAreaName');
-                        const match = {
-                            homeTeam: fixture.getAttribute('HomeTeam'),
-                            awayTeam: fixture.getAttribute('AwayTeam'),
-                        };
-
-                        if (!fixtureData[timeFormatted]) {
-                            fixtureData[timeFormatted] = {};
-                        }
-                        fixtureData[timeFormatted][court] = match;
-                    }
-                });
-
-                // Get unique list of courts
-                const allCourts = Array.from(
-                    new Set(
-                        Object.values(fixtureData).flatMap(times => Object.keys(times))
-                    )
-                );
-
-                // Display the day in the title
-                document.getElementById('title').textContent += ` - ${currentDay}`;
-
-                // Build the table
-                let output = '<table><tr><th>Time</th>';
-                allCourts.forEach(court => {
-                    output += `<th>${court}</th>`;
-                });
-                output += '</tr>';
-
-                Object.entries(fixtureData).forEach(([time, courts]) => {
-                    output += `<tr><td><strong>${time}</strong></td>`;
-                    allCourts.forEach(court => {
-                        if (courts[court]) {
-                            const match = courts[court];
-                            output += `<td class="match">
-                                <span>${match.homeTeam}</span>
-                                <span class="vs">vs</span>
-                                <span>${match.awayTeam}</span>
-                            </td>`;
-                        } else {
-                            output += `<td></td>`;
-                        }
-                    });
-                    output += '</tr>';
-                });
-
-                output += '</table>';
-                document.getElementById('data').innerHTML = output;
-            } catch (err) {
-                console.error('Error fetching or processing XML:', err);
-                document.getElementById('data').innerHTML = 'Error loading data.';
-            }
+        const selectedURLs = urls[currentDay];
+        if (!selectedURLs || selectedURLs.length === 0) {
+            document.getElementById('data').innerHTML = `No fixtures available for ${currentDay}.`;
+            return;
         }
+
+        // Fetch all XML data
+        const allData = await Promise.all(selectedURLs.map(fetchXML));
+
+        // Filter fixtures for today's date only
+        const fixtureData = {};
+        allData.forEach(xml => {
+            const fixtures = xml.getElementsByTagName('Fixture');
+            for (const fixture of fixtures) {
+                const dateTimeString = fixture.getAttribute('DateTime'); // "DD/MM/YYYY HH:MM"
+                const [datePart, timePart] = dateTimeString.split(' ');
+                const [day, month, year] = datePart.split('/');
+                const fixtureDate = new Date(`${year}-${month}-${day}`); // Convert to local Date object
+
+                // Compare fixture date to today's date
+                if (fixtureDate.getTime() === today.getTime()) {
+                    const [hour, minute] = timePart.split(':');
+                    const timeFormatted = new Date();
+                    timeFormatted.setHours(parseInt(hour), parseInt(minute));
+                    const formattedTime = timeFormatted.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+                    const court = fixture.getAttribute('PlayingAreaName');
+                    const match = {
+                        homeTeam: fixture.getAttribute('HomeTeam'),
+                        awayTeam: fixture.getAttribute('AwayTeam'),
+                    };
+
+                    if (!fixtureData[formattedTime]) {
+                        fixtureData[formattedTime] = {};
+                    }
+                    fixtureData[formattedTime][court] = match;
+                }
+            }
+        });
+
+        if (Object.keys(fixtureData).length === 0) {
+            document.getElementById('data').innerHTML = `No fixtures available for today (${today.toLocaleDateString()}).`;
+            return;
+        }
+
+        // Display the day in the title
+        document.getElementById('title').textContent += ` - ${currentDay}`;
+
+        // Build the table
+        let output = '<table><tr><th>Time</th>';
+        const allCourts = Array.from(
+            new Set(
+                Object.values(fixtureData).flatMap(times => Object.keys(times))
+            )
+        );
+        allCourts.forEach(court => {
+            output += `<th>${court}</th>`;
+        });
+        output += '</tr>';
+
+        Object.entries(fixtureData).forEach(([time, courts]) => {
+            output += `<tr><td><strong>${time}</strong></td>`;
+            allCourts.forEach(court => {
+                if (courts[court]) {
+                    const match = courts[court];
+                    output += `<td class="match">
+                        <span>${match.homeTeam}</span>
+                        <span class="vs">vs</span>
+                        <span>${match.awayTeam}</span>
+                    </td>`;
+                } else {
+                    output += `<td></td>`;
+                }
+            });
+            output += '</tr>';
+        });
+
+        output += '</table>';
+        document.getElementById('data').innerHTML = output;
+    } catch (err) {
+        console.error('Error fetching or processing XML:', err);
+        document.getElementById('data').innerHTML = 'Error loading data.';
+    }
+}
 
         loadFixtures();
     </script>
