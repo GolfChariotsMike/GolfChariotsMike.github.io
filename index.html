@@ -127,44 +127,45 @@
                 // Filter fixtures for today's date only
                 const fixtureData = {};
                 allData.forEach((xml, index) => {
-                    console.log(`Processing XML Data from URL ${selectedURLs[index]}...`);
-                    const fixtures = xml.getElementsByTagName('Fixture');
-                    console.log('Number of fixtures:', fixtures.length);
+    console.log(`Processing XML Data from URL ${selectedURLs[index]}...`);
+    const fixtures = xml.getElementsByTagName('Fixture');
+    console.log('Number of fixtures:', fixtures.length);
 
-                    for (const fixture of fixtures) {
-                        const dateTimeString = fixture.getAttribute('DateTime');
-                        console.log('Fixture DateTime:', dateTimeString);
+    for (const fixture of fixtures) {
+        const dateTimeString = fixture.getAttribute('DateTime');
+        console.log('Fixture DateTime:', dateTimeString);
 
-                        const [datePart, timePart] = dateTimeString.split(' ');
-                        const [day, month, year] = datePart.split('/');
-                        const fixtureDate = new Date(`${year}-${month}-${day}`);
-                        console.log('Parsed Fixture Date:', fixtureDate.toLocaleDateString());
+        const [datePart, timePart] = dateTimeString.split(' ');
+        const [day, month, year] = datePart.split('/');
+        const fixtureDate = new Date(`${year}-${month}-${day}`);
+        console.log('Parsed Fixture Date:', fixtureDate.toLocaleDateString());
 
-                        if (
-    fixtureDate.getDate() === today.getDate() &&
-    fixtureDate.getMonth() === today.getMonth() &&
-    fixtureDate.getFullYear() === today.getFullYear()
-) {
-                            console.log('Fixture matches today\'s date.');
+        // Compare only the date components to avoid timezone mismatches
+        if (
+            fixtureDate.getDate() === today.getDate() &&
+            fixtureDate.getMonth() === today.getMonth() &&
+            fixtureDate.getFullYear() === today.getFullYear()
+        ) {
+            console.log('Fixture matches today\'s date.');
 
-                            const [hour, minute] = timePart.split(':');
-                            const timeFormatted = new Date();
-                            timeFormatted.setHours(parseInt(hour), parseInt(minute));
-                            const formattedTime = timeFormatted.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const [hour, minute] = timePart.split(':');
+            const timeFormatted = new Date();
+            timeFormatted.setHours(parseInt(hour), parseInt(minute));
+            const formattedTime = timeFormatted.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
-                            const court = fixture.getAttribute('PlayingAreaName');
-                            const match = {
-                                homeTeam: fixture.getAttribute('HomeTeam'),
-                                awayTeam: fixture.getAttribute('AwayTeam'),
-                            };
+            const court = fixture.getAttribute('PlayingAreaName');
+            const match = {
+                homeTeam: fixture.getAttribute('HomeTeam'),
+                awayTeam: fixture.getAttribute('AwayTeam'),
+            };
 
-                            if (!fixtureData[formattedTime]) {
-                                fixtureData[formattedTime] = {};
-                            }
-                            fixtureData[formattedTime][court] = match;
-                        }
-                    }
-                });
+            if (!fixtureData[formattedTime]) {
+                fixtureData[formattedTime] = {};
+            }
+            fixtureData[formattedTime][court] = match;
+        }
+    }
+});
 
                 if (Object.keys(fixtureData).length === 0) {
                     console.log('No fixtures found for today.');
