@@ -140,7 +140,11 @@
                         const fixtureDate = new Date(`${year}-${month}-${day}`);
                         console.log('Parsed Fixture Date:', fixtureDate.toLocaleDateString());
 
-                        if (fixtureDate.getTime() === today.getTime()) {
+                        if (
+    fixtureDate.getDate() === today.getDate() &&
+    fixtureDate.getMonth() === today.getMonth() &&
+    fixtureDate.getFullYear() === today.getFullYear()
+) {
                             console.log('Fixture matches today\'s date.');
 
                             const [hour, minute] = timePart.split(':');
