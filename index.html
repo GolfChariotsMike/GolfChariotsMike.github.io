@@ -199,7 +199,13 @@ allCourts.forEach(court => {
 output += '</tr>';
 
 // Add rows for each time slot
-Object.entries(fixtureData).forEach(([time, courts]) => {
+Object.entries(fixtureData)
+    .sort(([timeA], [timeB]) => {
+        const [hourA, minuteA] = timeA.split(':').map(Number);
+        const [hourB, minuteB] = timeB.split(':').map(Number);
+        return hourA - hourB || minuteA - minuteB; // Sort by hour first, then by minute
+    })
+    .forEach(([time, courts]) => {
     output += `<tr><td><strong>${time}</strong></td>`;
     allCourts.forEach(court => {
         if (courts[court]) {
