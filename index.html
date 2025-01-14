@@ -201,16 +201,27 @@ output += '</tr>';
 // Add rows for each time slot
 Object.entries(fixtureData)
     .sort(([timeA], [timeB]) => {
-        // Convert "6:00" into total minutes (e.g., 6 * 60 + 0 = 360)
-        const [hourA, minuteA] = timeA.split(':').map(Number);
-        const [hourB, minuteB] = timeB.split(':').map(Number);
+        // Convert "6:00 pm" into 24-hour format minutes (e.g., "6:00 pm" => 1080, "7:30 pm" => 1170)
+        const parseTime = (timeStr) => {
+            const [time, meridian] = timeStr.split(' '); // Split "6:00 pm" into "6:00" and "pm"
+            let [hours, minutes] = time.split(':').map(Number);
 
-        const totalMinutesA = hourA * 60 + minuteA;
-        const totalMinutesB = hourB * 60 + minuteB;
+            if (meridian.toLowerCase() === 'pm' && hours !== 12) {
+                hours += 12; // Convert PM times, except 12 PM
+            } else if (meridian.toLowerCase() === 'am' && hours === 12) {
+                hours = 0; // Convert 12 AM to 0 hours
+            }
+
+            return hours * 60 + minutes; // Total minutes since midnight
+        };
+
+        const totalMinutesA = parseTime(timeA);
+        const totalMinutesB = parseTime(timeB);
 
         return totalMinutesA - totalMinutesB; // Compare total minutes
     })
     .forEach(([time, courts]) => {
+        // Create a row for the current time slot
         output += `<tr><td><strong>${time}</strong></td>`;
         allCourts.forEach(court => {
             if (courts[court]) {
