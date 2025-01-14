@@ -201,14 +201,13 @@ output += '</tr>';
 // Add rows for each time slot
 Object.entries(fixtureData)
     .sort(([timeA], [timeB]) => {
-        // Parse the times into actual Date objects for comparison
-        const [hourA, minuteA] = timeA.split(':').map(Number);
-        const [hourB, minuteB] = timeB.split(':').map(Number);
-
-        return hourA - hourB || minuteA - minuteB; // Compare hours first, then minutes
+        // Convert times into Date objects for accurate sorting
+        const dateA = new Date(`1970-01-01T${timeA}:00`); // Default date for comparison
+        const dateB = new Date(`1970-01-01T${timeB}:00`);
+        return dateA - dateB; // Compare as actual Date objects
     })
     .forEach(([time, courts]) => {
-        // Create a row for the current time slot
+        // Generate table row for this time slot
         output += `<tr><td><strong>${time}</strong></td>`;
         allCourts.forEach(court => {
             if (courts[court]) {
