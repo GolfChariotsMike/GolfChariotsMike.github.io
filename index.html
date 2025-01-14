@@ -201,27 +201,29 @@ output += '</tr>';
 // Add rows for each time slot
 Object.entries(fixtureData)
     .sort(([timeA], [timeB]) => {
+        // Parse the times into actual Date objects for comparison
         const [hourA, minuteA] = timeA.split(':').map(Number);
         const [hourB, minuteB] = timeB.split(':').map(Number);
-        return hourA - hourB || minuteA - minuteB; // Sort by hour first, then by minute
+
+        return hourA - hourB || minuteA - minuteB; // Compare hours first, then minutes
     })
     .forEach(([time, courts]) => {
-    output += `<tr><td><strong>${time}</strong></td>`;
-    allCourts.forEach(court => {
-        if (courts[court]) {
-            const match = courts[court];
-            output += `<td class="match">
-                <span>${match.homeTeam}</span>
-                <span class="vs">vs</span>
-                <span>${match.awayTeam}</span>
-            </td>`;
-        } else {
-            output += `<td></td>`;
-        }
+        // Create a row for the current time slot
+        output += `<tr><td><strong>${time}</strong></td>`;
+        allCourts.forEach(court => {
+            if (courts[court]) {
+                const match = courts[court];
+                output += `<td class="match">
+                    <span>${match.homeTeam}</span>
+                    <span class="vs">vs</span>
+                    <span>${match.awayTeam}</span>
+                </td>`;
+            } else {
+                output += `<td></td>`;
+            }
+        });
+        output += '</tr>';
     });
-    output += '</tr>';
-});
-
 output += '</table>';
 document.getElementById('data').innerHTML = output;
             } catch (err) {
