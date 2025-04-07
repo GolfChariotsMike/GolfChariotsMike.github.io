@@ -67,21 +67,19 @@
     async function fetchXML(url) {
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const text = await response.text();
         return new DOMParser().parseFromString(text, 'application/xml');
       } catch (error) {
-        console.error(`Error fetching XML from ${url}:`, error);
+        console.error("Error loading XML:", error);
         return null;
       }
     }
 
     async function loadFixtures() {
       const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayStr = now.toISOString().split("T")[0]; // e.g. "2025-04-07"
 
-      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const currentDay = daysOfWeek[today.getDay()];
+      const currentDayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
 
       const urls = {
         Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=5'],
@@ -99,35 +97,36 @@
         Sunday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5']
       };
 
-      const selectedURLs = urls[currentDay];
-      if (!selectedURLs || selectedURLs.length === 0) {
-        document.getElementById('data').innerHTML = `No fixtures available for ${currentDay}.`;
+      const urlsToday = urls[currentDayName] || [];
+
+      if (urlsToday.length === 0) {
+        document.getElementById("data").innerHTML = `No fixtures available for ${currentDayName}.`;
         return;
       }
 
-      const xmlDataList = await Promise.all(selectedURLs.map(fetchXML));
-      const cutoffTime = new Date(today);
-      cutoffTime.setHours(21, 30, 0, 0); // 9:30 PM
+      const cutoff = new Date();
+      cutoff.setHours(21, 30, 0, 0); // 9:30 PM today
 
-      let tableHTML = `<table><tr><th>Time</th><th>Match</th></tr>`;
-      let hasFixtures = false;
+      let fixturesHTML = `<table><tr><th>Time</th><th>Match</th></tr>`;
+      let foundFixtures = false;
 
-      xmlDataList.forEach(xml => {
+      const allXMLs = await Promise.all(urlsToday.map(fetchXML));
+      allXMLs.forEach(xml => {
         if (!xml) return;
-        const fixtures = xml.querySelectorAll('Fixture');
 
+        const fixtures = xml.querySelectorAll("Fixture");
         fixtures.forEach(fixture => {
-          const startDateTime = fixture.querySelector('StartDateTime')?.textContent;
-          const homeTeam = fixture.querySelector('HomeTeamName')?.textContent || 'TBD';
-          const awayTeam = fixture.querySelector('AwayTeamName')?.textContent || 'TBD';
+          const start = fixture.querySelector("StartDateTime")?.textContent;
+          const home = fixture.querySelector("HomeTeamName")?.textContent || "TBD";
+          const away = fixture.querySelector("AwayTeamName")?.textContent || "TBD";
 
-          if (!startDateTime) return;
+          if (!start) return;
 
-          const fixtureDate = new Date(startDateTime);
+          const startDate = new Date(start);
 
-          const isToday = fixtureDate.toDateString() === today.toDateString();
-          const isBeforeCutoff = fixtureDate <= cutoffTime;
+          // Check: same date AND not later than 9:30 PM
+          const isSameDay = startDate.toISOString().split("T")[0] === todayStr;
+          const isBeforeCutoff = startDate <= cutoff;
 
-          if (isToday && isBeforeCutoff) {
-            hasFixtures = true;
-            const timeString = fixtureDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit
+          if (isSameDay && isBeforeCutoff) {
+            const timeString = startDate.toLocaleTimeString([], {
