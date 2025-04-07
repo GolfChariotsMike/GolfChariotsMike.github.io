@@ -1,132 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>OSSIE INDOOR FIXTURES</title>
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #2a1e21;
-      color: #212529;
-      text-align: center;
-    }
-    h1 {
-      font-size: 2.5em;
-      color: #de2829;
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 20px auto;
-      background-color: white;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #dee2e6;
-      padding: 16px;
-      text-align: center;
-    }
-    th {
-      background-color: #de2829;
-      color: white;
-      font-weight: bold;
-      font-size: 1.8em;
-    }
-    td {
-      background-color: #ffffff;
-      font-size: 1.2em;
-    }
-    tr:nth-child(even) td {
-      background-color: #f2f2f2;
-    }
-    .match {
-      font-size: 1.5em;
-      line-height: 1.5;
-    }
-    .match span {
-      display: block;
-    }
-    .match .vs {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #ff0000;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSSIE INDOOR FIXTURES</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #2a1e21; /* black background */
+            color: #212529; /* Dark text */
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #de2829; /* RED */
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px auto; /* Center the table */
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 16px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #de2829; /* RED header */
+            color: white;
+            font-weight: bold;
+            font-size: 1.8em;
+        }
+
+        td {
+            background-color: #ffffff;
+            font-size: 1.2em;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f2f2f2; /* Light gray rows */
+        }
+
+        .match {
+            font-size: 1.5em;
+            line-height: 1.5;
+        }
+
+        .match span {
+            display: block; /* Ensures each part (team names and 'vs') is on its own line */
+        }
+
+        .match .vs {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ff0000; /* Optional: Red for 'vs' */
+        }
+    </style>
 </head>
 <body>
-  <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
     <img src="images/OssieIndoorLogo.png" alt="Ossie Logo Left" style="width: 50px; height: auto;">
     <h1 id="title">OSSIE INDOOR BEACH VOLLEYBALL</h1>
     <img src="images/OssieIndoorLogo.png" alt="Ossie Logo Right" style="width: 50px; height: auto;">
-  </div>
-  <div id="data">Loading data...</div>
+</div>
+    <div id="data">Loading data...</div>
+    <script>
+        async function fetchXML(url) {
+            try {
+                console.log(`Fetching data from URL: ${url}`);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const text = await response.text();
+                const parser = new DOMParser();
+                console.log('Successfully fetched and parsed XML.');
+                return parser.parseFromString(text, 'application/xml');
+            } catch (error) {
+                console.error(`Error fetching XML from ${url}:`, error);
+                throw error;
+            }
+        }
 
-  <script>
-    async function fetchXML(url) {
-      try {
-        const response = await fetch(url);
-        const text = await response.text();
-        return new DOMParser().parseFromString(text, 'application/xml');
-      } catch (error) {
-        console.error("Error loading XML:", error);
-        return null;
-      }
+        async function loadFixtures() {
+            try {
+                console.log('Starting to load fixtures...');
+
+                // Get today's normalized date
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Midnight of today
+                console.log('Today\'s Date:', today.toLocaleDateString());
+
+                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const currentDay = daysOfWeek[today.getDay()];
+                console.log('Current Day:', currentDay);
+
+                // URLs for each day
+                const urls = {
+                    Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=5'],
+                    Tuesday: [
+                        'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5',
+                        'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=5&SeasonId=5'
+                    ],
+                    Wednesday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5',
+                        'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'],
+                    Thursday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=3&SeasonId=5'],
+                    Friday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5'],
+                    Saturday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'],
+                    Sunday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5']
+                };
+
+                const selectedURLs = urls[currentDay];
+                if (!selectedURLs || selectedURLs.length === 0) {
+                    console.log('No URLs found for the current day.');
+                    document.getElementById('data').innerHTML = `No fixtures available for ${currentDay}.`;
+                    return;
+                }
+
+                // Fetch all XML data
+                const allData = await Promise.all(selectedURLs.map(fetchXML));
+                console.log('Fetched XML Data:', allData);
+
+                // Filter fixtures for today's date only
+                const fixtureData = {};
+                allData.forEach((xml, index) => {
+    console.log(`Processing XML Data from URL ${selectedURLs[index]}...`);
+    const fixtures = xml.getElementsByTagName('Fixture');
+    console.log('Number of fixtures:', fixtures.length);
+
+    for (const fixture of fixtures) {
+        const dateTimeString = fixture.getAttribute('DateTime');
+        console.log('Fixture DateTime:', dateTimeString);
+
+        const [datePart, timePart] = dateTimeString.split(' ');
+        const [day, month, year] = datePart.split('/');
+        const fixtureDate = new Date(`${year}-${month}-${day}`);
+        console.log('Parsed Fixture Date:', fixtureDate.toLocaleDateString());
+
+        // Compare only the date components to avoid timezone mismatches
+        if (
+            fixtureDate.getDate() === today.getDate() &&
+            fixtureDate.getMonth() === today.getMonth() &&
+            fixtureDate.getFullYear() === today.getFullYear()
+        ) {
+            console.log('Fixture matches today\'s date.');
+
+            const [hour, minute] = timePart.split(':');
+            const timeFormatted = new Date();
+            timeFormatted.setHours(parseInt(hour), parseInt(minute));
+            const formattedTime = timeFormatted.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+            const court = fixture.getAttribute('PlayingAreaName');
+            const match = {
+                homeTeam: fixture.getAttribute('HomeTeam'),
+                awayTeam: fixture.getAttribute('AwayTeam'),
+            };
+
+            if (!fixtureData[formattedTime]) {
+                fixtureData[formattedTime] = {};
+            }
+            fixtureData[formattedTime][court] = match;
+        }
     }
+});
 
-    async function loadFixtures() {
-      const now = new Date();
-      const todayStr = now.toISOString().split("T")[0]; // e.g. "2025-04-07"
+                if (Object.keys(fixtureData).length === 0) {
+                    console.log('No fixtures found for today.');
+                    document.getElementById('data').innerHTML = `No fixtures available for today (${today.toLocaleDateString()}).`;
+                    return;
+                }
 
-      const currentDayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
+                console.log('Filtered Fixture Data:', fixtureData);
 
-      const urls = {
-        Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=5'],
-        Tuesday: [
-          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5',
-          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=5&SeasonId=5'
-        ],
-        Wednesday: [
-          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5',
-          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'
-        ],
-        Thursday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=3&SeasonId=5'],
-        Friday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5'],
-        Saturday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'],
-        Sunday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5']
-      };
+                // Display the day in the title
+                document.getElementById('title').textContent += ` - ${currentDay}`;
 
-      const urlsToday = urls[currentDayName] || [];
+                // Build the table
+                let output = '<table><tr><th>Time</th>';
 
-      if (urlsToday.length === 0) {
-        document.getElementById("data").innerHTML = `No fixtures available for ${currentDayName}.`;
-        return;
-      }
+// Ensure courts are displayed in the predefined order
+const predefinedCourtOrder = ['Court 1', 'Court 2', 'Court 3', 'Court 4', 'Court 5', 'Court 6', 'Court 7', 'Court 8'];
+const allCourts = predefinedCourtOrder.filter(court => {
+    // Include courts in order even if they have no games
+    return Object.values(fixtureData).some(times => Object.keys(times).includes(court)) || true;
+});
 
-      const cutoff = new Date();
-      cutoff.setHours(21, 30, 0, 0); // 9:30 PM today
+// Add column headers for courts
+allCourts.forEach(court => {
+    output += `<th>${court}</th>`;
+});
+output += '</tr>';
 
-      let fixturesHTML = `<table><tr><th>Time</th><th>Match</th></tr>`;
-      let foundFixtures = false;
+// Add rows for each time slot
+Object.entries(fixtureData)
+    .sort(([timeA], [timeB]) => {
+        // Convert "6:00 pm" into 24-hour format minutes (e.g., "6:00 pm" => 1080, "7:30 pm" => 1170)
+        const parseTime = (timeStr) => {
+            const [time, meridian] = timeStr.split(' '); // Split "6:00 pm" into "6:00" and "pm"
+            let [hours, minutes] = time.split(':').map(Number);
 
-      const allXMLs = await Promise.all(urlsToday.map(fetchXML));
-      allXMLs.forEach(xml => {
-        if (!xml) return;
+            if (meridian.toLowerCase() === 'pm' && hours !== 12) {
+                hours += 12; // Convert PM times, except 12 PM
+            } else if (meridian.toLowerCase() === 'am' && hours === 12) {
+                hours = 0; // Convert 12 AM to 0 hours
+            }
 
-        const fixtures = xml.querySelectorAll("Fixture");
-        fixtures.forEach(fixture => {
-          const start = fixture.querySelector("StartDateTime")?.textContent;
-          const home = fixture.querySelector("HomeTeamName")?.textContent || "TBD";
-          const away = fixture.querySelector("AwayTeamName")?.textContent || "TBD";
+            return hours * 60 + minutes; // Total minutes since midnight
+        };
 
-          if (!start) return;
+        const totalMinutesA = parseTime(timeA);
+        const totalMinutesB = parseTime(timeB);
 
-          const startDate = new Date(start);
+        return totalMinutesA - totalMinutesB; // Compare total minutes
+    })
+    .forEach(([time, courts]) => {
+        // Create a row for the current time slot
+        output += `<tr><td><strong>${time}</strong></td>`;
+        allCourts.forEach(court => {
+            if (courts[court]) {
+                const match = courts[court];
+                output += `<td class="match">
+                    <span>${match.homeTeam}</span>
+                    <span class="vs">vs</span>
+                    <span>${match.awayTeam}</span>
+                </td>`;
+            } else {
+                output += `<td></td>`;
+            }
+        });
+        output += '</tr>';
+    });
+output += '</table>';
+document.getElementById('data').innerHTML = output;
+            } catch (err) {
+                console.error('Error loading fixtures:', err);
+                document.getElementById('data').innerHTML = 'Error loading data.';
+            }
+        }
 
-          // Check: same date AND not later than 9:30 PM
-          const isSameDay = startDate.toISOString().split("T")[0] === todayStr;
-          const isBeforeCutoff = startDate <= cutoff;
-
-          if (isSameDay && isBeforeCutoff) {
-            const timeString = startDate.toLocaleTimeString([], {
+        loadFixtures();
+    </script>
+</body>
+</html>
