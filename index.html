@@ -1,167 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSSIE INDOOR FIXTURES</title>
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #2a1e21;
-            color: #212529;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            color: #de2829;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px auto;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        th, td {
-            border: 1px solid #dee2e6;
-            padding: 16px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #de2829;
-            color: white;
-            font-weight: bold;
-            font-size: 1.8em;
-        }
-
-        td {
-            background-color: #ffffff;
-            font-size: 1.2em;
-        }
-
-        tr:nth-child(even) td {
-            background-color: #f2f2f2;
-        }
-
-        .match {
-            font-size: 1.5em;
-            line-height: 1.5;
-        }
-
-        .match span {
-            display: block;
-        }
-
-        .match .vs {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #ff0000;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OSSIE INDOOR FIXTURES</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #2a1e21;
+      color: #212529;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5em;
+      color: #de2829;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px auto;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 16px;
+      text-align: center;
+    }
+    th {
+      background-color: #de2829;
+      color: white;
+      font-weight: bold;
+      font-size: 1.8em;
+    }
+    td {
+      background-color: #ffffff;
+      font-size: 1.2em;
+    }
+    tr:nth-child(even) td {
+      background-color: #f2f2f2;
+    }
+    .match {
+      font-size: 1.5em;
+      line-height: 1.5;
+    }
+    .match span {
+      display: block;
+    }
+    .match .vs {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ff0000;
+    }
+  </style>
 </head>
 <body>
-    <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-        <img src="images/OssieIndoorLogo.png" alt="Ossie Logo Left" style="width: 50px; height: auto;">
-        <h1 id="title">OSSIE INDOOR BEACH VOLLEYBALL</h1>
-        <img src="images/OssieIndoorLogo.png" alt="Ossie Logo Right" style="width: 50px; height: auto;">
-    </div>
-    <div id="data">Loading data...</div>
+  <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+    <img src="images/OssieIndoorLogo.png" alt="Ossie Logo Left" style="width: 50px; height: auto;">
+    <h1 id="title">OSSIE INDOOR BEACH VOLLEYBALL</h1>
+    <img src="images/OssieIndoorLogo.png" alt="Ossie Logo Right" style="width: 50px; height: auto;">
+  </div>
+  <div id="data">Loading data...</div>
 
-    <script>
-        async function fetchXML(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                const text = await response.text();
-                const parser = new DOMParser();
-                return parser.parseFromString(text, 'application/xml');
-            } catch (error) {
-                console.error(`Error fetching XML from ${url}:`, error);
-                throw error;
-            }
-        }
+  <script>
+    async function fetchXML(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const text = await response.text();
+        return new DOMParser().parseFromString(text, 'application/xml');
+      } catch (error) {
+        console.error(`Error fetching XML from ${url}:`, error);
+        return null;
+      }
+    }
 
-        async function loadFixtures() {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    async function loadFixtures() {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const currentDay = daysOfWeek[today.getDay()];
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const currentDay = daysOfWeek[today.getDay()];
 
-            const urls = {
-                Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=5'],
-                Tuesday: [
-                    'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5',
-                    'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=5&SeasonId=5'
-                ],
-                Wednesday: [
-                    'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5',
-                    'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'
-                ],
-                Thursday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=3&SeasonId=5'],
-                Friday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5'],
-                Saturday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'],
-                Sunday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5']
-            };
+      const urls = {
+        Monday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=2&SeasonId=5'],
+        Tuesday: [
+          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5',
+          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=5&SeasonId=5'
+        ],
+        Wednesday: [
+          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5',
+          'https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'
+        ],
+        Thursday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=3&SeasonId=5'],
+        Friday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=6&SeasonId=5'],
+        Saturday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=7&SeasonId=5'],
+        Sunday: ['https://ossieindoorbeachvolleyball.spawtz.com/External/Fixtures/Feed.aspx?Type=Fixtures&LeagueId=8&SeasonId=5']
+      };
 
-            const selectedURLs = urls[currentDay];
-            if (!selectedURLs || selectedURLs.length === 0) {
-                document.getElementById('data').innerHTML = `No fixtures available for ${currentDay}.`;
-                return;
-            }
+      const selectedURLs = urls[currentDay];
+      if (!selectedURLs || selectedURLs.length === 0) {
+        document.getElementById('data').innerHTML = `No fixtures available for ${currentDay}.`;
+        return;
+      }
 
-            try {
-                const allData = await Promise.all(selectedURLs.map(fetchXML));
-                const cutoffTime = new Date(today);
-                cutoffTime.setHours(21, 30, 0, 0); // 9:30 PM
+      const xmlDataList = await Promise.all(selectedURLs.map(fetchXML));
+      const cutoffTime = new Date(today);
+      cutoffTime.setHours(21, 30, 0, 0); // 9:30 PM
 
-                let tableHTML = `<table><tr><th>Time</th><th>Match</th></tr>`;
-                let foundFixtures = false;
+      let tableHTML = `<table><tr><th>Time</th><th>Match</th></tr>`;
+      let hasFixtures = false;
 
-                allData.forEach(xml => {
-                    const fixtures = xml.querySelectorAll('Fixture');
+      xmlDataList.forEach(xml => {
+        if (!xml) return;
+        const fixtures = xml.querySelectorAll('Fixture');
 
-                    fixtures.forEach(fixture => {
-                        const dateStr = fixture.querySelector('StartDateTime')?.textContent;
-                        const homeTeam = fixture.querySelector('HomeTeamName')?.textContent || 'TBD';
-                        const awayTeam = fixture.querySelector('AwayTeamName')?.textContent || 'TBD';
+        fixtures.forEach(fixture => {
+          const startDateTime = fixture.querySelector('StartDateTime')?.textContent;
+          const homeTeam = fixture.querySelector('HomeTeamName')?.textContent || 'TBD';
+          const awayTeam = fixture.querySelector('AwayTeamName')?.textContent || 'TBD';
 
-                        const fixtureDate = new Date(dateStr);
+          if (!startDateTime) return;
 
-                        if (
-                            fixtureDate.toDateString() === today.toDateString() &&
-                            fixtureDate <= cutoffTime
-                        ) {
-                            const timeString = fixtureDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const fixtureDate = new Date(startDateTime);
 
-                            tableHTML += `
-                                <tr>
-                                    <td>${timeString}</td>
-                                    <td class="match">
-                                        <span>${homeTeam}</span>
-                                        <span class="vs">vs</span>
-                                        <span>${awayTeam}</span>
-                                    </td>
-                                </tr>`;
-                            foundFixtures = true;
-                        }
-                    });
-                });
+          const isToday = fixtureDate.toDateString() === today.toDateString();
+          const isBeforeCutoff = fixtureDate <= cutoffTime;
 
-                tableHTML += `</table>`;
-                document.getElementById('data').innerHTML = foundFixtures ? tableHTML : `No fixtures before 9:30 PM for ${currentDay}.`;
-            } catch (err) {
-                document.getElementById('data').innerHTML = `Error loading fixtures. Please try again later.`;
-                console.error(err);
-            }
-        }
-
-        loadFixtures();
-    </script>
-</body>
-</html>
+          if (isToday && isBeforeCutoff) {
+            hasFixtures = true;
+            const timeString = fixtureDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit
